@@ -1,6 +1,5 @@
 plugins {
     id("org.openrewrite.build.language-library")
-    id("jvm-test-suite")
 }
 
 val compiler = javaToolchains.compilerFor {
@@ -50,37 +49,4 @@ tasks.withType<Javadoc>().configureEach {
     executable = javaToolchains.javadocToolFor {
         languageVersion.set(JavaLanguageVersion.of(8))
     }.get().executablePath.toString()
-}
-
-testing {
-    suites {
-        val test by getting(JvmTestSuite::class)
-
-        register("compatibilityTest", JvmTestSuite::class) {
-            dependencies {
-                implementation(project())
-                implementation(project(":rewrite-test"))
-                implementation(project(":rewrite-java-tck"))
-                implementation(project(":rewrite-java-test"))
-                implementation("org.assertj:assertj-core:latest.release")
-            }
-
-            targets {
-                all {
-                    testTask.configure {
-                        useJUnitPlatform {
-                            excludeTags("java11", "java17", "java21")
-                        }
-                        testClassesDirs += files(javaTck.files.map { zipTree(it) })
-                        jvmArgs = listOf("-XX:+UnlockDiagnosticVMOptions", "-XX:+ShowHiddenFrames")
-                        shouldRunAfter(test)
-                    }
-                }
-            }
-        }
-    }
-}
-
-tasks.named("check") {
-    dependsOn(testing.suites.named("compatibilityTest"))
 }

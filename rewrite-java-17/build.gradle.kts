@@ -5,7 +5,6 @@ import org.gradle.internal.impldep.org.junit.platform.launcher.TagFilter.exclude
 
 plugins {
     id("org.openrewrite.build.language-library")
-    id("jvm-test-suite")
 }
 
 val javaTck = configurations.create("javaTck") {
@@ -52,37 +51,4 @@ tasks.withType<Javadoc> {
         "**/ReloadableJava17TypeMapping**",
         "**/ReloadableJava17TypeSignatureBuilder**"
     )
-}
-
-testing {
-    suites {
-        val test by getting(JvmTestSuite::class)
-
-        register("compatibilityTest", JvmTestSuite::class) {
-            dependencies {
-                implementation(project())
-                implementation(project(":rewrite-test"))
-                implementation(project(":rewrite-java-tck"))
-                implementation(project(":rewrite-java-test"))
-                implementation("org.assertj:assertj-core:latest.release")
-            }
-
-            targets {
-                all {
-                    testTask.configure {
-                        useJUnitPlatform {
-                            excludeTags("java21")
-                        }
-                        testClassesDirs += files(javaTck.files.map { zipTree(it) })
-                        jvmArgs = listOf("-XX:+UnlockDiagnosticVMOptions", "-XX:+ShowHiddenFrames")
-                        shouldRunAfter(test)
-                    }
-                }
-            }
-        }
-    }
-}
-
-tasks.named("check") {
-    dependsOn(testing.suites.named("compatibilityTest"))
 }

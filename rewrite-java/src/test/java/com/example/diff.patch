@@ -1,0 +1,13 @@
+diff --git a/com/example/Sample.java b/com/example/Sample.java
+index 3b9152d..d5315a2 100644
+--- a/com/example/Sample.java
++++ b/com/example/Sample.java
+@@ -7,7 +7,7 @@
+
+ public class Sample {
+     public static void main(String[] args) {
+-        final Integer[] array = (Integer[]) Arrays.asList(1, 2, 3).toArray();
++        final Integer[] array = Arrays.asList(1, 2, 3).toArray(new Integer[0]);
+         final List<Integer> list = Stream.of(1, 2, 3).collect(Collectors.toList());
+         System.out.println(Arrays.toString(array));
+         System.out.println(list.size());

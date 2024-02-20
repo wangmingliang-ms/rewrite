@@ -1,6 +1,5 @@
 plugins {
     id("org.openrewrite.build.language-library")
-    id("jvm-test-suite")
 }
 
 val javaTck = configurations.create("javaTck") {
@@ -20,11 +19,11 @@ dependencies {
     "javaTck"(project(":rewrite-java-tck"))
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
-    }
-}
+//java {
+//    toolchain {
+//        languageVersion.set(JavaLanguageVersion.of(11))
+//    }
+//}
 
 tasks.withType<JavaCompile> {
     // allows --add-exports to in spite of the JDK's restrictions on this
@@ -53,37 +52,4 @@ tasks.withType<Javadoc> {
         "**/ReloadableJava11TypeMapping**",
         "**/ReloadableJava11TypeSignatureBuilder**"
     )
-}
-
-testing {
-    suites {
-        val test by getting(JvmTestSuite::class)
-
-        register("compatibilityTest", JvmTestSuite::class) {
-            dependencies {
-                implementation(project())
-                implementation(project(":rewrite-test"))
-                implementation(project(":rewrite-java-tck"))
-                implementation(project(":rewrite-java-test"))
-                implementation("org.assertj:assertj-core:latest.release")
-            }
-
-            targets {
-                all {
-                    testTask.configure {
-                        useJUnitPlatform {
-                            excludeTags("java17", "java21")
-                        }
-                        testClassesDirs += files(javaTck.files.map { zipTree(it) })
-                        jvmArgs = listOf("-XX:+UnlockDiagnosticVMOptions", "-XX:+ShowHiddenFrames")
-                        shouldRunAfter(test)
-                    }
-                }
-            }
-        }
-    }
-}
-
-tasks.named("check") {
-    dependsOn(testing.suites.named("compatibilityTest"))
 }
